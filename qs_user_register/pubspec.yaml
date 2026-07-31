@@ -1,6 +1,6 @@
 name: qs_user_register
 description: "用户注册"
-version: 1.0.0
+version: 1.0.1
 homepage: "https://github.com/FallPine-Flutter/qs_user_register"
 
 environment:
@@ -17,6 +17,7 @@ dependencies:
   ip_location: ^1.0.0 # IP位置工具
   qs_log: ^1.0.0  # 日志工具库
   qs_device_info: ^1.0.0  # 设备信息工具库
+  qs_asa_attribution_info: ^1.0.0 # ASA归因信息工具
 
 dev_dependencies:
   flutter_test:

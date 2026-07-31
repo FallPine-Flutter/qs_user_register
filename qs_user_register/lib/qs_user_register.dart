@@ -5,18 +5,13 @@ import 'dart:io';
 import 'package:ip_location/ip_location.dart';
 import 'package:ip_location/ip_location_model.dart';
 import 'package:qs_aes_encrypt/qs_aes_encrypt.dart';
+import 'package:qs_asa_attribution_info/qs_asa_attribution_info.dart';
 import 'package:qs_device_info/qs_device_info.dart';
 import 'package:qs_log/qs_log.dart';
 import 'package:qs_net_request/qs_net_request.dart';
 import 'package:qs_storage_tool/qs_storage_tool.dart';
 
-import 'qs_user_register_platform_interface.dart';
-
 class QsUserRegister {
-  Future<String?> getPlatformVersion() {
-    return QsUserRegisterPlatform.instance.getPlatformVersion();
-  }
-
   // 标记是否已注册
   static const _kIsRegisterKey = "isRegisterKey";
 
@@ -44,7 +39,6 @@ class QsUserRegister {
     required String fcmId, // 推送 ID
     required String locale, // 用户语言环境，例如 en_US
     required bool pushState, // 推送开关，true/false 或 1/0
-    required String iosAttributionToken, // iOS 归因 token
   }) async {
     // 是否已注册
     if (await _isRegistered()) {
@@ -77,9 +71,11 @@ class QsUserRegister {
       "pushState": pushState,
     };
 
-    // iOS 独有归因字段，对外参数名加 ios 前缀避免调用方误解平台范围。
     if (Platform.isIOS) {
-      params["attributionToken"] = iosAttributionToken;
+      final attributionToken = await _getAttributionToken();
+      if (attributionToken != null && attributionToken.isNotEmpty) {
+        params["attributionToken"] = attributionToken;
+      }
     }
 
     return _register(
@@ -290,6 +286,15 @@ class QsUserRegister {
     } catch (e) {
       QsLog.error("获取应用版本失败: $e");
       return "";
+    }
+  }
+
+  static Future<String?> _getAttributionToken() async {
+    try {
+      return await QsAsaAttributionInfo.getAttributionToken();
+    } catch (e) {
+      QsLog.error("获取ASA归因token失败: $e");
+      return null;
     }
   }
 
