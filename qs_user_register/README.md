@@ -6,13 +6,15 @@
 
 从 `1.0.1` 开始，调用方不再需要传入 iOS 归因 token。插件会在 iOS 端通过 `qs_asa_attribution_info` 自动获取 ASA attribution token，并在获取成功时随注册参数一起上报。
 
+`1.0.2` 将设备型号的上报字段名由 `deviceModel` 调整为 `devicePlatform`。
+
 ## 安装
 
 在项目 `pubspec.yaml` 中添加依赖：
 
 ```yaml
 dependencies:
-  qs_user_register: ^1.0.1
+  qs_user_register: ^1.0.2
 ```
 
 然后执行：
@@ -113,7 +115,7 @@ Android 和 iOS 都会上报：
 | `fcmId` | 推送 ID |
 | `appVersion` | 应用版本 |
 | `deviceType` | 设备类型 |
-| `deviceModel` | 设备型号 |
+| `devicePlatform` | 设备型号 |
 | `deviceOSVersion` | 设备系统版本 |
 | `timezone` | IP 定位返回的时区 |
 | `locale` | 调用方传入的用户语言环境 |

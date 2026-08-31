@@ -60,7 +60,7 @@ class QsUserRegister {
       "fcmId": fcmId,
       "appVersion": await _getAppVersion(),
       "deviceType": _getDeviceType(),
-      "deviceModel": await _getDeviceModel(),
+      "devicePlatform": await _getDeviceModel(),
       "deviceOSVersion": await _getDeviceOSVersion(),
       "timezone": location?.timezone ?? "",
       "locale": locale,
@@ -77,6 +77,7 @@ class QsUserRegister {
         params["attributionToken"] = attributionToken;
       }
     }
+    QsLog.debug("注册参数: $params");
 
     return _register(
       apiUrl: apiUrl,
