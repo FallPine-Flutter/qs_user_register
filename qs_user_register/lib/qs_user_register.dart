@@ -10,6 +10,7 @@ import 'package:qs_device_info/qs_device_info.dart';
 import 'package:qs_log/qs_log.dart';
 import 'package:qs_net_request/qs_net_request.dart';
 import 'package:qs_storage_tool/qs_storage_tool.dart';
+import 'package:qs_user_register/qs_user_register_api_parameter_name_model.dart';
 
 class QsUserRegister {
   // 标记是否已注册
@@ -32,6 +33,7 @@ class QsUserRegister {
   /// 注册
   static Future<bool> register({
     required String apiUrl, // 接口地址
+    required QsUserRegisterApiParameterNameModel apiParameterNameModel,
     required String aesSecretKey, // aes secret key
     required String aesIv, // aes iv
     required String aesSctToken, // aes sct token
@@ -56,19 +58,19 @@ class QsUserRegister {
     final location = await _getLocationByIp();
 
     Map<String, dynamic> params = {
-      "userId": userId,
-      "fcmId": fcmId,
-      "appVersion": await _getAppVersion(),
-      "deviceType": _getDeviceType(),
-      "devicePlatform": await _getDeviceModel(),
-      "deviceOSVersion": await _getDeviceOSVersion(),
-      "timezone": location?.timezone ?? "",
-      "locale": locale,
-      "ipCountry": location?.country ?? "",
-      "ipState": location?.regionName ?? "",
-      "ipCity": location?.city ?? "",
-      "ipAddress": location?.query ?? "",
-      "pushState": pushState,
+      apiParameterNameModel.userId: userId,
+      apiParameterNameModel.fcmId: fcmId,
+      apiParameterNameModel.appVersion: await _getAppVersion(),
+      apiParameterNameModel.deviceType: _getDeviceType(),
+      apiParameterNameModel.deviceModel: await _getDeviceModel(),
+      apiParameterNameModel.deviceOSVersion: await _getDeviceOSVersion(),
+      apiParameterNameModel.timezone: location?.timezone ?? "",
+      apiParameterNameModel.locale: locale,
+      apiParameterNameModel.ipCountry: location?.country ?? "",
+      apiParameterNameModel.ipState: location?.regionName ?? "",
+      apiParameterNameModel.ipCity: location?.city ?? "",
+      apiParameterNameModel.ipAddress: location?.query ?? "",
+      apiParameterNameModel.pushState: pushState,
     };
 
     if (Platform.isIOS) {
