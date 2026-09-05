@@ -6,7 +6,7 @@
 
 从 `1.0.1` 开始，调用方不再需要传入 iOS 归因 token。插件会在 iOS 端通过 `qs_asa_attribution_info` 自动获取 ASA attribution token，并在获取成功时随注册参数一起上报。
 
-`1.0.2` 将设备型号的上报字段名由 `deviceModel` 调整为 `devicePlatform`。
+当前版本为 `1.0.3`。注册时必须传入 `QsUserRegisterApiParameterNameModel`，配置注册数据的字段名；设备型号通过模型的 `deviceModel` 属性指定上报字段名。
 
 ## 安装
 
@@ -14,8 +14,10 @@
 
 ```yaml
 dependencies:
-  qs_user_register: ^1.0.2
+  qs_user_register: ^1.0.4
 ```
+
+环境要求与当前 `pubspec.yaml` 一致：Dart `^3.11.5`、Flutter `>=3.3.0`，并需使用满足该 Dart 约束的 Flutter SDK。支持 Android 和 iOS。
 
 然后执行：
 
@@ -27,10 +29,27 @@ flutter pub get
 
 ```dart
 import 'package:qs_user_register/qs_user_register.dart';
+import 'package:qs_user_register/qs_user_register_api_parameter_name_model.dart';
 
 Future<void> registerUser() async {
   final isSuccess = await QsUserRegister.register(
     apiUrl: 'https://example.com/api/register',
+    apiParameterNameModel: QsUserRegisterApiParameterNameModel(
+      userId: 'userId',
+      fcmId: 'fcmId',
+      appVersion: 'appVersion',
+      deviceType: 'deviceType',
+      deviceModel: 'devicePlatform',
+      deviceOSVersion: 'deviceOSVersion',
+      timezone: 'timezone',
+      locale: 'locale',
+      ipCountry: 'ipCountry',
+      ipState: 'ipState',
+      ipCity: 'ipCity',
+      ipAddress: 'ipAddress',
+      pushState: 'pushState',
+      attributionToken: 'attributionToken',
+    ),
     aesSecretKey: 'your_aes_secret_key',
     aesIv: 'your_aes_iv',
     aesSctToken: 'your_sct_token',
@@ -55,6 +74,7 @@ Future<void> registerUser() async {
 ```dart
 static Future<bool> register({
   required String apiUrl,
+  required QsUserRegisterApiParameterNameModel apiParameterNameModel,
   required String aesSecretKey,
   required String aesIv,
   required String aesSctToken,
@@ -68,6 +88,7 @@ static Future<bool> register({
 | 参数 | 说明 |
 | --- | --- |
 | `apiUrl` | 注册接口地址 |
+| `apiParameterNameModel` | 注册数据字段名映射，所有构造参数均为必填 `String` |
 | `aesSecretKey` | AES 加密 secret key |
 | `aesIv` | AES 加密 IV |
 | `aesSctToken` | 请求头 `sct` 的值 |
@@ -81,13 +102,13 @@ static Future<bool> register({
 `register` 返回 `Future<bool>`：
 
 - `true`：本次请求注册成功，或本地已经标记为注册成功。
-- `false`：当前平台不支持、JSON 编码失败、AES 加密失败，或本次接口请求失败。
+- `false`：当前平台不支持、JSON 编码失败、AES 加密返回空字符串，或本次接口请求失败。
 
-接口请求失败时会启动后台重试；当前平台不支持、JSON 编码失败或 AES 加密失败不会启动后台重试。
+接口请求失败时会启动后台重试；当前平台不支持、JSON 编码失败或 AES 加密返回空字符串不会启动后台重试。当前实现未捕获加密调用本身抛出的异常，调用方可按需使用 `try/catch` 处理。
 
 ## 请求行为
 
-插件会先组装注册参数，再进行 JSON 编码和 AES 加密，最终以如下格式请求接口：
+插件会先组装注册参数，再进行 JSON 编码和 AES 加密，最终通过 HTTP POST 以如下 JSON 格式请求接口：
 
 ```json
 {
@@ -103,33 +124,39 @@ static Future<bool> register({
 }
 ```
 
-接口返回 `code == 0` 时视为注册成功。注册成功后，插件会在本地保存注册状态，后续再次调用 `register` 会直接返回 `true`，不会重复请求接口。
+接口返回 `code == 0` 时视为注册成功。注册成功后，插件会尝试在本地保存注册状态；本地状态为已注册时，后续调用 `register` 会直接返回 `true`，不会重复请求接口。保存失败只记录日志，不改变本次成功返回值。
+
+注册状态使用固定存储键 `isRegisterKey`，不按 `userId` 或接口地址区分，也未提供公开的重置接口。因此，更换用户、推送 ID 或其他参数不会自动重新上报。
 
 ## 上报字段
 
-Android 和 iOS 都会上报：
+`QsUserRegisterApiParameterNameModel` 中的值表示服务端字段名，不是实际业务数据。模型需要单独导入，主入口文件未导出该类型。字段名应非空且互不重复，避免组装 Map 时覆盖数据。
 
-| 字段 | 说明 |
-| --- | --- |
-| `userId` | 用户 ID |
-| `fcmId` | 推送 ID |
-| `appVersion` | 应用版本 |
-| `deviceType` | 设备类型 |
-| `devicePlatform` | 设备型号 |
-| `deviceOSVersion` | 设备系统版本 |
-| `timezone` | IP 定位返回的时区 |
-| `locale` | 调用方传入的用户语言环境 |
-| `ipCountry` | IP 定位返回的国家或地区 |
-| `ipState` | IP 定位返回的省/州 |
-| `ipCity` | IP 定位返回的城市 |
-| `ipAddress` | IP 地址 |
-| `pushState` | 推送开关 |
+Android 和 iOS 的通用字段均使用模型映射。下面列出模型属性及上述示例对应的请求字段：
+
+| 模型属性 | 示例请求字段 | 说明 |
+| --- | --- | --- |
+| `userId` | `userId` | 用户 ID |
+| `fcmId` | `fcmId` | 推送 ID |
+| `appVersion` | `appVersion` | 应用版本 |
+| `deviceType` | `deviceType` | 设备类型 |
+| `deviceModel` | `devicePlatform` | 设备型号 |
+| `deviceOSVersion` | `deviceOSVersion` | 设备系统版本 |
+| `timezone` | `timezone` | IP 定位返回的时区 |
+| `locale` | `locale` | 调用方传入的用户语言环境 |
+| `ipCountry` | `ipCountry` | IP 定位返回的国家或地区 |
+| `ipState` | `ipState` | IP 定位返回的省/州 |
+| `ipCity` | `ipCity` | IP 定位返回的城市 |
+| `ipAddress` | `ipAddress` | IP 地址 |
+| `pushState` | `pushState` | 调用方传入的布尔值 |
 
 iOS 会额外上报：
 
 | 字段 | 说明 |
 | --- | --- |
 | `attributionToken` | iOS 归因 token，由插件内部通过 `qs_asa_attribution_info` 获取；获取失败时不传该字段 |
+
+当前实现中，`attributionToken` 是固定请求字段，未读取模型的同名属性。该属性仍为必填项，建议按示例传入 `'attributionToken'`；设置其他名称不会改变实际请求字段。外层 `data`、请求头 `sct` 和响应判定字段 `code` 也不受模型配置影响。
 
 ## ASA 归因
 
@@ -145,7 +172,7 @@ iOS 端会在注册参数组装阶段调用 `QsAsaAttributionInfo.getAttribution
 
 获取失败、系统版本不支持或 token 为空时，插件会继续执行注册流程，但不会携带 `attributionToken` 字段。
 
-`qs_asa_attribution_info` 的 iOS token 获取依赖 Apple `AdServices`，要求 iOS 14.3 或更高版本。低版本 iOS、Android 或其他平台不会阻塞注册主流程。
+token 获取能力由 `qs_asa_attribution_info` 提供，具体系统版本要求以该依赖为准。Android 注册时不会调用 token 获取方法。
 
 ## 后台重试
 
@@ -159,11 +186,13 @@ iOS 端会在注册参数组装阶段调用 `QsAsaAttributionInfo.getAttribution
 
 之后固定每 `1min` 重试一次。任意一次重试成功后，会保存本地注册状态并停止后台重试。
 
-重复调用 `register` 时，如果后台重试任务已经存在，插件会更新为最新参数，但不会创建多个重试循环。
+重试复用已加密的数据，不会每次重新获取设备信息、IP 位置或 ASA token。
+
+重复调用 `register` 仍可能发起新的即时请求；该请求失败并进入重试逻辑时，会更新现有重试任务的接口地址、请求头 token 和加密数据，不会另建重试循环。插件未对多个并发 `register` 调用做请求去重，建议调用方避免并发调用。
 
 ## 注意事项
 
-- 当前仅支持 Android 和 iOS；其他平台会返回 `false`，且不会启动后台重试。
+- 当前仅支持 Android 和 iOS；未命中本地已注册状态时，其他原生平台会返回 `false`，且不会启动后台重试。插件使用 `dart:io`，不支持 Web。
 - iOS 会通过 `qs_asa_attribution_info` 自动获取 ASA 归因 token；获取失败时不会阻断注册，也不会携带 `attributionToken` 字段。
 - 插件会通过 IP 获取粗略位置；位置获取失败不会阻断注册，对应字段会使用空字符串。
 - 设备信息或应用版本获取失败不会阻断注册，对应字段会使用空字符串。

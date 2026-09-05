@@ -1,6 +1,6 @@
 name: qs_user_register
 description: "用户注册"
-version: 1.0.3
+version: 1.0.4
 homepage: "https://github.com/FallPine-Flutter/qs_user_register"
 
 environment:
