@@ -1,0 +1,54 @@
+# OS and editor files
+.DS_Store
+*.log
+*.swp
+*.iml
+*.ipr
+*.iws
+.idea/
+.vscode/
+
+# Flutter, Dart, and Pub generated files
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.packages
+**/.pub/
+**/.pub-cache/
+**/build/
+**/coverage/
+**/doc/api/
+**/pubspec.lock
+
+# Symbolication and obfuscation outputs
+**/app.*.symbols
+**/app.*.map.json
+**/*.lcov
+**/test-results/
+
+# Local environment files
+**/*.local
+**/.env
+**/.env.*
+!**/.env.example
+
+# Android generated files and signing secrets
+**/android/.gradle/
+**/android/.cxx/
+**/android/local.properties
+**/android/key.properties
+**/android/**/GeneratedPluginRegistrant.java
+**/*.keystore
+**/*.jks
+
+# iOS generated files
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/DerivedData/
+**/ios/**/xcuserdata/
+**/ios/Flutter/.last_build_id
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/ephemeral/
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/**/GeneratedPluginRegistrant.h
+**/ios/**/GeneratedPluginRegistrant.m

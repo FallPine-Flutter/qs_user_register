@@ -11,13 +11,20 @@ dependencies:
   flutter:
     sdk: flutter
   plugin_platform_interface: ^2.0.2
-  qs_net_request: ^1.0.0 # 网络请求库
-  qs_storage_tool: ^0.0.1 # 本地工具库
-  qs_aes_encrypt: ^1.0.0  # 加密工具库
-  ip_location: ^1.0.0 # IP位置工具
-  qs_log: ^1.0.0  # 日志工具库
-  qs_device_info: ^1.0.0  # 设备信息工具库
-  qs_asa_attribution_info: ^1.0.0 # ASA归因信息工具
+  qs_net_request: # 网络请求库
+    path: ../../qs_net_request/qs_net_request
+  qs_storage_tool: # 本地工具库
+    path: ../../qs_storage_tool/qs_storage_tool
+  qs_aes_encrypt: # 加密工具库
+    path: ../../qs_aes_encrypt/qs_aes_encrypt
+  qs_ip_location: # IP位置工具
+    path: ../../qs_ip_location/qs_ip_location
+  qs_log: # 日志工具库
+    path: ../../qs_log/qs_log
+  qs_device_info: # 设备信息工具库
+    path: ../../qs_device_info/qs_device_info
+  qs_asa_attribution_info: # ASA归因信息工具
+    path: ../../qs_asa_attribution_info/qs_asa_attribution_info
 
 dev_dependencies:
   flutter_test:

@@ -2,8 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:ip_location/ip_location.dart';
-import 'package:ip_location/ip_location_model.dart';
+import 'package:qs_ip_location/qs_ip_location.dart';
 import 'package:qs_aes_encrypt/qs_aes_encrypt.dart';
 import 'package:qs_asa_attribution_info/qs_asa_attribution_info.dart';
 import 'package:qs_device_info/qs_device_info.dart';
@@ -66,9 +65,9 @@ class QsUserRegister {
       apiParameterNameModel.deviceOSVersion: await _getDeviceOSVersion(),
       apiParameterNameModel.timezone: location?.timezone ?? "",
       apiParameterNameModel.locale: locale,
-      apiParameterNameModel.ipCountry: location?.country ?? "",
+      apiParameterNameModel.ipCountry: location?.countryName ?? "",
       apiParameterNameModel.ipState: location?.regionName ?? "",
-      apiParameterNameModel.ipCity: location?.city ?? "",
+      apiParameterNameModel.ipCity: location?.cityName ?? "",
       apiParameterNameModel.ipAddress: location?.query ?? "",
       apiParameterNameModel.pushState: pushState,
     };
@@ -302,9 +301,9 @@ class QsUserRegister {
   }
 
   /// 根据 IP 获取省市区信息
-  static Future<IpLocationModel?> _getLocationByIp() async {
+  static Future<QsIpLocationModel?> _getLocationByIp() async {
     try {
-      IpLocationModel? location = await IpLocation.getIpLocation();
+      QsIpLocationModel? location = await QsIpLocation.getIpLocation();
       return location;
     } catch (e) {
       QsLog.error("获取位置信息失败: $e");
