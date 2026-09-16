@@ -6,7 +6,7 @@
 
 从 `1.0.1` 开始，调用方不再需要传入 iOS 归因 token。插件会在 iOS 端通过 `qs_asa_attribution_info` 自动获取 ASA attribution token，并在获取成功时随注册参数一起上报。
 
-当前版本为 `1.0.3`。注册时必须传入 `QsUserRegisterApiParameterNameModel`，配置注册数据的字段名；设备型号通过模型的 `deviceModel` 属性指定上报字段名。
+当前版本为 `1.0.5`。注册时必须传入 `QsUserRegisterApiParameterNameModel`，配置注册数据的字段名；设备型号通过模型的 `deviceModel` 属性指定上报字段名。
 
 ## 安装
 
@@ -14,7 +14,7 @@
 
 ```yaml
 dependencies:
-  qs_user_register: ^1.0.4
+  qs_user_register: ^1.0.5
 ```
 
 环境要求与当前 `pubspec.yaml` 一致：Dart `^3.11.5`、Flutter `>=3.3.0`，并需使用满足该 Dart 约束的 Flutter SDK。支持 Android 和 iOS。

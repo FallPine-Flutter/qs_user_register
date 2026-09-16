@@ -68,7 +68,7 @@ class QsUserRegister {
       apiParameterNameModel.ipCountry: location?.countryName ?? "",
       apiParameterNameModel.ipState: location?.regionName ?? "",
       apiParameterNameModel.ipCity: location?.cityName ?? "",
-      apiParameterNameModel.ipAddress: location?.query ?? "",
+      apiParameterNameModel.ipAddress: location?.ip ?? "",
       apiParameterNameModel.pushState: pushState,
     };
 

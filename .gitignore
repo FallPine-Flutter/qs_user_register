@@ -20,6 +20,11 @@
 **/doc/api/
 **/pubspec.lock
 
+# Reproducible dependency files in bundled plugin examples
+**/example/ios/Podfile
+**/example/ios/Flutter/Debug.xcconfig
+**/example/ios/Flutter/Release.xcconfig
+
 # Symbolication and obfuscation outputs
 **/app.*.symbols
 **/app.*.map.json
