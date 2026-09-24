@@ -1,6 +1,6 @@
 name: qs_user_register
 description: "用户注册"
-version: 1.0.5
+version: 1.0.6
 homepage: "https://github.com/FallPine-Flutter/qs_user_register"
 
 environment:
@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   plugin_platform_interface: ^2.0.2
-  qs_net_request: ^1.0.1 # 网络请求库
+  dio: ^5.11.1 # 网络请求库
   qs_storage_tool: ^1.0.0 # 本地存储工具库
   qs_aes_encrypt: ^1.0.0 # 加密工具库
   qs_ip_location: ^1.0.1 # IP位置工具
@@ -23,6 +23,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  fake_async: ^1.3.3
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
