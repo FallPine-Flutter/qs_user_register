@@ -1,12 +1,12 @@
 # qs_user_register
 
-用户注册插件，用于在 Android / iOS 应用中上报用户、设备、IP 位置、推送状态和 iOS 归因信息。
+用户注册插件，用于在 Android / iOS 应用中上报用户、设备、Firebase App ID、IP 位置、推送状态和 iOS 归因信息。
 
 插件当前只暴露 `QsUserRegister.register` 一个注册入口。`getPlatformVersion` 属于 Flutter 模板示例方法，已从插件 API 中移除。
 
 从 `1.0.1` 开始，调用方不再需要传入 iOS 归因 token。插件会在 iOS 端通过 `qs_asa_attribution_info` 自动获取 ASA attribution token，并在获取成功时随注册参数一起上报。
 
-当前版本为 `1.0.5`。注册时必须传入 `QsUserRegisterApiParameterNameModel`，配置注册数据的字段名；设备型号通过模型的 `deviceModel` 属性指定上报字段名。
+当前版本为 `1.0.7`。注册时必须传入 `QsUserRegisterApiParameterNameModel`，配置注册数据的字段名；设备型号通过模型的 `deviceModel` 属性指定上报字段名。
 
 ## 安装
 
@@ -14,7 +14,7 @@
 
 ```yaml
 dependencies:
-  qs_user_register: ^1.0.5
+  qs_user_register: ^1.0.7
 ```
 
 环境要求与当前 `pubspec.yaml` 一致：Dart `^3.11.5`、Flutter `>=3.3.0`，并需使用满足该 Dart 约束的 Flutter SDK。支持 Android 和 iOS。
@@ -37,6 +37,7 @@ Future<void> registerUser() async {
     apiParameterNameModel: QsUserRegisterApiParameterNameModel(
       userId: 'userId',
       fcmId: 'fcmId',
+      firebaseAppId: 'firebaseAppId',
       appVersion: 'appVersion',
       deviceType: 'deviceType',
       deviceModel: 'devicePlatform',
@@ -55,6 +56,7 @@ Future<void> registerUser() async {
     aesSctToken: 'your_sct_token',
     userId: 'user_id',
     fcmId: 'fcm_push_id',
+    firebaseAppId: 'your_firebase_app_id',
     locale: 'zh_CN',
     pushState: true,
   );
@@ -67,7 +69,7 @@ Future<void> registerUser() async {
 }
 ```
 
-建议在应用启动后，并且已经拿到 `userId`、`fcmId` 等必要参数时调用一次。应用重启后如果仍需要确保注册成功，可以再次调用 `register`。
+建议在应用启动后，并且已经拿到 `userId`、`fcmId`、`firebaseAppId` 等必要参数时调用一次。应用重启后如果仍需要确保注册成功，可以再次调用 `register`。
 
 ## API
 
@@ -80,6 +82,7 @@ static Future<bool> register({
   required String aesSctToken,
   required String userId,
   required String fcmId,
+  required String firebaseAppId,
   required String locale,
   required bool pushState,
 })
@@ -94,8 +97,20 @@ static Future<bool> register({
 | `aesSctToken` | 请求头 `sct` 的值 |
 | `userId` | 用户 ID |
 | `fcmId` | 推送 ID |
+| `firebaseAppId` | 调用方传入的 Firebase App ID |
 | `locale` | 用户语言环境，例如 `zh_CN`、`en_US` |
 | `pushState` | 推送开关 |
+
+### Firebase App ID 与升级说明
+
+`firebaseAppId` 为必填参数，升级后需要同时补齐两个位置：
+
+- `QsUserRegister.register(firebaseAppId: ...)`：传入实际 Firebase App ID。
+- `QsUserRegisterApiParameterNameModel(firebaseAppId: ...)`：传入后端接收该值的字段名，例如 `firebaseAppId` 或 `firebase_app_id`。
+
+插件不会自动获取 Firebase App ID，也不要求新增 Firebase 依赖。调用方应从业务项目已有的 Firebase 配置或初始化结果中取得该值；它与 `fcmId` 分别作为独立字段传入。
+
+该值会随其他注册数据一起进行 JSON 编码和 AES 加密。更换 Firebase App ID 或其字段映射会替换尚未完成的活动任务；本地已标记注册成功时，仍直接返回 `true`，不会因新增或更换此参数重新上报。
 
 ## 返回值
 
@@ -124,7 +139,7 @@ static Future<bool> register({
 }
 ```
 
-接口返回 `code == 0` 时视为注册成功。注册成功后，插件会尝试在本地保存注册状态；本地状态为已注册时，后续调用 `register` 会直接返回 `true`，不会重复请求接口。保存失败只记录日志，不改变本次成功返回值。
+接口 HTTP 状态码为 `200`、响应为 JSON 对象且 `code == 0` 时视为注册成功；字符串 `"0"` 不视为成功。注册成功后，插件会尝试在本地保存注册状态；本地状态为已注册时，后续调用 `register` 会直接返回 `true`，不会重复请求接口。保存失败只记录日志，不改变本次成功返回值。
 
 注册状态使用固定存储键 `isRegisterKey`，不按 `userId` 或接口地址区分，也未提供公开的重置接口。因此，更换用户、推送 ID 或其他参数不会自动重新上报。
 
@@ -138,6 +153,7 @@ Android 和 iOS 的通用字段均使用模型映射。下面列出模型属性�
 | --- | --- | --- |
 | `userId` | `userId` | 用户 ID |
 | `fcmId` | `fcmId` | 推送 ID |
+| `firebaseAppId` | `firebaseAppId` | 调用方传入的 Firebase App ID |
 | `appVersion` | `appVersion` | 应用版本 |
 | `deviceType` | `deviceType` | 设备类型 |
 | `deviceModel` | `devicePlatform` | 设备型号 |
@@ -209,4 +225,6 @@ flutter test
 python3 tool/run_reliability_tests.py
 ```
 
-回归脚本在 `.dart_tool` 的临时目录组装当前源码及测试替身，验证私有任务生命周期，不向生产 API 添加测试入口。平台判断、信息获取和存储使用测试替身；Dio 保持真实实现，覆盖模拟传输与本地 HTTP 服务。该验证不替代 Android/iOS 真机测试。
+以上命令请依次执行，避免多个 Flutter 测试进程同时写入同一构建目录。
+
+回归脚本在 `.dart_tool` 的临时目录组装当前源码及测试替身，验证私有任务生命周期，不向生产 API 添加测试入口。平台判断、信息获取和存储使用测试替身；Dio 保持真实实现，覆盖模拟传输与本地 HTTP 服务，以及 Firebase App ID 自定义字段上报、参数变化替换任务和相同参数复用。该验证不替代 Android/iOS 真机测试。

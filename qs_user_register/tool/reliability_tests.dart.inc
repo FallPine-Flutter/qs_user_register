@@ -56,15 +56,15 @@ class Adapter implements HttpClientAdapter {
 ResponseBody body({required int code}) => ResponseBody.fromString(
   '{"code":$code}', 200, headers: {Headers.contentTypeHeader: [Headers.jsonContentType]});
 
-Future<bool> register({String user = 'a', String url = 'http://localhost/register', String tokenField = 'customToken'}) => QsUserRegister.register(
+Future<bool> register({String user = 'a', String url = 'http://localhost/register', String tokenField = 'customToken', String firebaseAppId = 'firebase-app', String firebaseAppIdField = 'customFirebaseAppId'}) => QsUserRegister.register(
   apiUrl: url,
   apiParameterNameModel: QsUserRegisterApiParameterNameModel(
-    userId: 'userId', fcmId: 'fcmId', appVersion: 'appVersion',
+    userId: 'userId', fcmId: 'fcmId', firebaseAppId: firebaseAppIdField, appVersion: 'appVersion',
     deviceType: 'deviceType', deviceModel: 'deviceModel', deviceOSVersion: 'os',
     timezone: 'timezone', locale: 'locale', ipCountry: 'country', ipState: 'state',
     ipCity: 'city', ipAddress: 'ip', pushState: 'push', attributionToken: tokenField),
   aesSecretKey: '0123456789abcdef', aesIv: '0123456789abcdef', aesSctToken: 'sct',
-  userId: user, fcmId: 'fcm', locale: 'en', pushState: true);
+  userId: user, fcmId: 'fcm', firebaseAppId: firebaseAppId, locale: 'en', pushState: true);
 
 void main() {
   late Adapter adapter;
@@ -97,6 +97,25 @@ void main() {
       expect(QsUserRegister._activeTask, null);
     });
   });
+  for (final changeField in [false, true]) {
+    test('changed Firebase ${changeField ? 'field' : 'value'} replaces active task', () {
+      fakeAsync((clock) {
+        final oldResult = register();
+        final oldTask = QsUserRegister._activeTask!;
+        final newResult = register(
+          firebaseAppId: changeField ? 'firebase-app' : 'another-app',
+          firebaseAppIdField: changeField ? 'anotherField' : 'customFirebaseAppId',
+        );
+        expect(identical(oldResult, newResult), false);
+        expect(oldTask.cancelled, true);
+        final input = QsUserRegister._activeTask!.input;
+        expect(input['firebaseAppId'], changeField ? 'firebase-app' : 'another-app');
+        expect(input['field.firebaseAppId'], changeField ? 'anotherField' : 'customFirebaseAppId');
+        clock.elapse(Duration.zero);
+        expect(adapter.calls, 1);
+      });
+    });
+  }
   test('failures retry exactly five seconds after completion', () {
     fakeAsync((clock) {
       adapter.respond = (n) async => body(code: n < 3 ? 1 : 0);
@@ -201,7 +220,7 @@ void main() {
       // Compare encrypted payload against separately prepared expected values.
       final expected = QsAesEncrypt.encrypt(
         secretKey: '0123456789abcdef', iv: '0123456789abcdef',
-        content: jsonEncode({'userId':'a','fcmId':'fcm','appVersion':'',
+        content: jsonEncode({'userId':'a','fcmId':'fcm','customFirebaseAppId':'firebase-app','appVersion':'',
           'deviceType':'ios','deviceModel':'model','os':'os','timezone':'',
           'locale':'en','country':'','state':'','city':'','ip':'','push':true,
           'customToken':'token'}));

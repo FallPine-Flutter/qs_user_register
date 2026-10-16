@@ -2,6 +2,7 @@ class QsUserRegisterApiParameterNameModel {
   QsUserRegisterApiParameterNameModel({
     required this.userId,
     required this.fcmId,
+    required this.firebaseAppId,
     required this.appVersion,
     required this.deviceType,
     required this.deviceModel,
@@ -20,6 +21,8 @@ class QsUserRegisterApiParameterNameModel {
   final String userId;
   // 推送 ID
   final String fcmId;
+  // Firebase App ID
+  final String firebaseAppId;
   // 应用版本
   final String appVersion;
   // 设备类型

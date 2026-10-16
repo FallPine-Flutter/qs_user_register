@@ -24,6 +24,7 @@ class QsUserRegister {
     required String aesSctToken, // aes sct token
     required String userId, // 用户ID
     required String fcmId, // 推送 ID
+    required String firebaseAppId, // firebase AppId
     required String locale, // 用户语言环境，例如 en_US
     required bool pushState, // 推送开关，true/false 或 1/0
   }) {
@@ -34,10 +35,12 @@ class QsUserRegister {
       'aesSctToken': aesSctToken,
       'userId': userId,
       'fcmId': fcmId,
+      'firebaseAppId': firebaseAppId,
       'locale': locale,
       'pushState': pushState,
       'field.userId': apiParameterNameModel.userId,
       'field.fcmId': apiParameterNameModel.fcmId,
+      'field.firebaseAppId': apiParameterNameModel.firebaseAppId,
       'field.appVersion': apiParameterNameModel.appVersion,
       'field.deviceType': apiParameterNameModel.deviceType,
       'field.deviceModel': apiParameterNameModel.deviceModel,
@@ -127,6 +130,7 @@ class QsUserRegister {
     final params = <String, dynamic>{
       input['field.userId']! as String: input['userId'],
       input['field.fcmId']! as String: input['fcmId'],
+      input['field.firebaseAppId']! as String: input['firebaseAppId'],
       input['field.appVersion']! as String: values[1],
       input['field.deviceType']! as String: _getDeviceType(),
       input['field.deviceModel']! as String: values[2],
