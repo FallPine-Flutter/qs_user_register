@@ -19,6 +19,7 @@ class QsUserRegister {
   static Future<bool> register({
     required String apiUrl, // 接口地址
     required QsUserRegisterApiParameterNameModel apiParameterNameModel,
+    required String isRegisterKey, // 记录是否已经注册的key
     required String aesSecretKey, // aes secret key
     required String aesIv, // aes iv
     required String aesSctToken, // aes sct token
@@ -28,6 +29,7 @@ class QsUserRegister {
     required String locale, // 用户语言环境，例如 en_US
     required bool pushState, // 推送开关，true/false 或 1/0
   }) {
+    _kIsRegisterKey = isRegisterKey;
     final input = <String, Object>{
       'apiUrl': apiUrl,
       'aesSecretKey': aesSecretKey,
@@ -143,6 +145,7 @@ class QsUserRegister {
       input['field.ipAddress']! as String: location?.ip ?? '',
       input['field.pushState']! as String: input['pushState'],
     };
+    QsLog.info("请求参数------$params");
     final token = values[4] as String?;
     if (token != null && token.isNotEmpty) {
       params[input['field.attributionToken']! as String] = token;
@@ -161,6 +164,7 @@ class QsUserRegister {
           task: task,
           encryptedParams: encryptedParams,
         );
+        QsLog.info("注册是否成功------$success");
         if (!_isCurrent(task: task)) return;
         if (success) {
           // 检查身份到设置提交屏障之间没有 await，禁止旧任务越过替换写入。
@@ -327,7 +331,7 @@ class QsUserRegister {
 
   /// Properties
   // 标记是否已注册
-  static const _kIsRegisterKey = 'isRegisterKey';
+  static String _kIsRegisterKey = 'isRegisterKey';
   static const _storageTimeout = Duration(seconds: 3);
   static const _infoTimeout = Duration(seconds: 5);
   static const _locationTimeout = Duration(seconds: 10);
